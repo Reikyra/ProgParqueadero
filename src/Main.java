@@ -62,7 +62,7 @@ public class Main {
                     System.out.println("Ingrese la cantidad de horas a avanzar:");
                     int horas = scanner.nextInt();
                     scanner.nextLine(); // Consume newline
-                    parqueadero.avanzarReloj(horas);
+                    parqueadero.avanzarHora(horas);
                     break;
                 case 6:
                     System.out.println("Ingrese la nueva tarifa por hora:");
@@ -107,3 +107,4 @@ public class Main {
         scanner.close();
     }
 }
+

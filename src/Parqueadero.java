@@ -11,34 +11,37 @@ public class Parqueadero {
     public static final int HORA_CIERRE = 20;
     public static final int TARIFA_INICIAL = 1200;
 
+    private Puesto[] puestos;
     private int tarifa;
     private int caja;
     private int horaActual;
     private boolean abierto;
-    private ArrayList<Puesto> puestos;
 
     public Parqueadero() {
-        this.tarifa = TARIFA_INICIAL;
-        this.caja = 0;
-        this.horaActual = HORA_INICIAL;
-        this.abierto = true;
-        this.puestos = new ArrayList<>(TAMANO);
-
-        for (int i = 1; i <= TAMANO; i++) {
-            puestos.add(new Puesto(i));
+        horaActual = HORA_INICIAL;
+        abierto = true;
+        tarifa = TARIFA_INICIAL;
+        caja = 0;
+        puestos = new Puesto[TAMANO];
+        for (int i = 0; i < TAMANO; i++) {
+            puestos[i] = new Puesto(i);
         }
     }
 
-    public void darPlacaCarro(int puesto) {
-        // Implementación del método
+    public String darPlacaCarro(int pPosicion) {
+        if (estaOcupado(pPosicion)) {
+            return "Placa: " + puestos[pPosicion].darCarro().darPlaca();
+        } else {
+            return "No hay un carro en esta posición";
+        }
     }
 
-    public int entrarCarro(String placa, int horaLlegada) {
-        if (!abierto || horaLlegada < HORA_INICIAL || horaLlegada > HORA_CIERRE) {
+    public int entrarCarro(String pPlaca, int pHoraLlegada) {
+        if (!abierto || pHoraLlegada < HORA_INICIAL || pHoraLlegada > HORA_CIERRE) {
             return PARQUEADERO_CERRADO;
         }
 
-        if (buscarCarro(placa) != null) {
+        if (buscarCarro(pPlaca) != null) {
             return CARRO_YA_EXISTE;
         }
 
@@ -47,13 +50,13 @@ public class Parqueadero {
             return NO_HAY_PUESTO;
         }
 
-        Carro nuevoCarro = new Carro(placa, horaLlegada);
-        puestos.get(puestoLibre).parquearCarro(nuevoCarro);
+        Carro nuevoCarro = new Carro(pPlaca, pHoraLlegada);
+        puestos[puestoLibre].parquearCarro(nuevoCarro);
         return puestoLibre;
     }
 
-    public int sacarCarro(String placa) {
-        Carro carro = buscarCarro(placa);
+    public int sacarCarro(String pPlaca) {
+        Carro carro = buscarCarro(pPlaca);
         if (carro == null) {
             return CARRO_NO_EXISTE;
         }
@@ -62,12 +65,11 @@ public class Parqueadero {
         caja += tarifa * horasParqueado;
 
         for (Puesto puesto : puestos) {
-            if (puesto.tieneCarroConPlaca(placa)) {
+            if (puesto.tieneCarroConPlaca(pPlaca)) {
                 puesto.sacarCarro();
                 return puesto.darNumeroPuesto();
             }
         }
-
         return CARRO_NO_EXISTE;
     }
 
@@ -86,11 +88,14 @@ public class Parqueadero {
     }
 
     public void cambiarTarifa(int nuevaTarifa) {
-        this.tarifa = nuevaTarifa;
+        tarifa = nuevaTarifa;
     }
 
-    public void avanzarReloj(int horas) {
+    public void avanzarHora(int horas) {
         horaActual += horas;
+        if (horaActual >= HORA_CIERRE) {
+            abierto = false;
+        }
     }
 
     public int darHoraActual() {
@@ -102,22 +107,32 @@ public class Parqueadero {
     }
 
     public boolean estaOcupado(int puesto) {
-        return puestos.get(puesto).estaOcupado();
+        return puestos[puesto].estaOcupado();
     }
 
-    public boolean metodo1() {
-        return contarCarrosQueComienzanConPlacaPB() > 0 && hayCarroCon24Horas();
+    public boolean estaAbierto() {
+        return abierto;
     }
 
-    public String metodo2() {
-        int cantidadCarrosSacados = desocuparParqueadero();
-        return "Cantidad de carros sacados: " + cantidadCarrosSacados;
+    private Carro buscarCarro(String placa) {
+        for (Puesto puesto : puestos) {
+            if (puesto.tieneCarroConPlaca(placa)) {
+                return puesto.darCarro();
+            }
+        }
+        return null;
+    }
+
+    private int buscarPuestoLibre() {
+        for (int i = 0; i < puestos.length; i++) {
+            if (!puestos[i].estaOcupado()) {
+                return i;
+            }
+        }
+        return NO_HAY_PUESTO;
     }
 
     public double darTiempoPromedio() {
-        if (puestos.isEmpty()) {
-            return 0;
-        }
         double totalHoras = 0;
         int carrosParqueados = 0;
         for (Puesto puesto : puestos) {
@@ -209,22 +224,16 @@ public class Parqueadero {
         return count;
     }
 
-    private Carro buscarCarro(String placa) {
-        for (Puesto puesto : puestos) {
-            if (puesto.tieneCarroConPlaca(placa)) {
-                return puesto.darCarro();
-            }
-        }
-        return null;
+    public String metodo1() {
+        int cantidadPB = contarCarrosQueComienzanConPlacaPB();
+        boolean hayCarro24Horas = hayCarroCon24Horas();
+        return "Cantidad de carros con placa PB: " + cantidadPB + " – Hay carro parqueado por 24 o más horas: " + (hayCarro24Horas ? "Sí" : "No");
     }
 
-    private int buscarPuestoLibre() {
-        for (int i = 0; i < puestos.size(); i++) {
-            if (!puestos.get(i).estaOcupado()) {
-                return i;
-            }
-        }
-        return NO_HAY_PUESTO;
+    public String metodo2() {
+        int cantidadCarrosSacados = desocuparParqueadero();
+        return "Cantidad de carros sacados: " + cantidadCarrosSacados;
     }
 }
+
 

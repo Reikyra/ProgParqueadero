@@ -16,11 +16,12 @@ public class Carro {
     }
 
     public boolean tienePlaca(String placa) {
-        return this.placa.equals(placa);
+        return this.placa.equalsIgnoreCase(placa);
     }
 
     public int darTiempoEnParqueadero(int horaActual) {
-        return horaActual - horaLlegada;
+        return horaActual - horaLlegada + 1;
     }
 }
+
 
